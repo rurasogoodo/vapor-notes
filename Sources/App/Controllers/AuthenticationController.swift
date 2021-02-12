@@ -47,7 +47,7 @@ struct AuthenticationController: RouteCollection {
                         }
                         throw $0
                 }
-                .flatMap { req.emailVerifier.verify(for: user) }
+//                .flatMap { req.emailVerifier.verify(for: user) }
         }
         .transform(to: .created)
     }

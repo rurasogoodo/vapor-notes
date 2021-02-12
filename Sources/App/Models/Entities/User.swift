@@ -24,14 +24,12 @@ final class User: Model, Authenticatable {
     
     init() {}
     
-    init(
-        id: UUID? = nil,
-        fullName: String,
-        email: String,
-        passwordHash: String,
-        isAdmin: Bool = false,
-        isEmailVerified: Bool = false
-    ) {
+    init(id: UUID? = nil,
+         fullName: String,
+         email: String,
+         passwordHash: String,
+         isAdmin: Bool = false,
+         isEmailVerified: Bool = true) {
         self.id = id
         self.fullName = fullName
         self.email = email
