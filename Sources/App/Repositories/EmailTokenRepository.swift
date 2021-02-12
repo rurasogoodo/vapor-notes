@@ -12,17 +12,17 @@ struct DatabaseEmailTokenRepository: EmailTokenRepository, DatabaseRepository {
     let database: Database
     
     func find(token: String) -> EventLoopFuture<EmailToken?> {
-        return EmailToken.query(on: database)
+        EmailToken.query(on: database)
             .filter(\.$token == token)
             .first()
     }
     
     func create(_ emailToken: EmailToken) -> EventLoopFuture<Void> {
-        return emailToken.create(on: database)
+        emailToken.create(on: database)
     }
     
     func delete(_ emailToken: EmailToken) -> EventLoopFuture<Void> {
-        return emailToken.delete(on: database)
+        emailToken.delete(on: database)
     }
     
     func find(userID: UUID) -> EventLoopFuture<EmailToken?> {

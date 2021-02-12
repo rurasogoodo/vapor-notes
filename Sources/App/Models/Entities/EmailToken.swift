@@ -18,12 +18,10 @@ final class EmailToken: Model {
     
     init() {}
     
-    init(
-        id: UUID? = nil,
-        userID: UUID,
-        token: String,
-        expiresAt: Date = Date().addingTimeInterval(Constants.EMAIL_TOKEN_LIFETIME)
-    ) {
+    init(id: UUID? = nil,
+         userID: UUID,
+         token: String,
+         expiresAt: Date = Date().addingTimeInterval(Constants.EMAIL_TOKEN_LIFETIME)) {
         self.id = id
         self.$user.id = userID
         self.token = token

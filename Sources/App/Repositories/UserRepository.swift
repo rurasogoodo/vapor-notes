@@ -15,31 +15,31 @@ struct DatabaseUserRepository: UserRepository, DatabaseRepository {
     let database: Database
     
     func create(_ user: User) -> EventLoopFuture<Void> {
-        return user.create(on: database)
+        user.create(on: database)
     }
     
     func delete(id: UUID) -> EventLoopFuture<Void> {
-        return User.query(on: database)
+        User.query(on: database)
             .filter(\.$id == id)
             .delete()
     }
     
     func all() -> EventLoopFuture<[User]> {
-        return User.query(on: database).all()
+        User.query(on: database).all()
     }
     
     func find(id: UUID?) -> EventLoopFuture<User?> {
-        return User.find(id, on: database)
+        User.find(id, on: database)
     }
     
     func find(email: String) -> EventLoopFuture<User?> {
-        return User.query(on: database)
+        User.query(on: database)
             .filter(\.$email == email)
             .first()
     }
     
     func set<Field>(_ field: KeyPath<User, Field>, to value: Field.Value, for userID: UUID) -> EventLoopFuture<Void>
-        where Field: QueryableProperty, Field.Model == User
+    where Field: QueryableProperty, Field.Model == User
     {
         return User.query(on: database)
             .filter(\.$id == userID)
@@ -65,6 +65,3 @@ extension Application.Repositories {
         storage.makeUserRepository = make
     }
 }
-
-
-

@@ -17,7 +17,7 @@ struct DatabasePasswordTokenRepository: PasswordTokenRepository, DatabaseReposit
         PasswordToken.query(on: database)
             .filter(\.$user.$id == userID)
             .first()
-     }
+    }
     
     func find(token: String) -> EventLoopFuture<PasswordToken?> {
         PasswordToken.query(on: database)

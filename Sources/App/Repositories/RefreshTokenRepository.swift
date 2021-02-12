@@ -14,15 +14,15 @@ struct DatabaseRefreshTokenRepository: RefreshTokenRepository, DatabaseRepositor
     let database: Database
     
     func create(_ token: RefreshToken) -> EventLoopFuture<Void> {
-        return token.create(on: database)
+        token.create(on: database)
     }
     
     func find(id: UUID?) -> EventLoopFuture<RefreshToken?> {
-        return RefreshToken.find(id, on: database)
+        RefreshToken.find(id, on: database)
     }
     
     func find(token: String) -> EventLoopFuture<RefreshToken?> {
-        return RefreshToken.query(on: database)
+        RefreshToken.query(on: database)
             .filter(\.$token == token)
             .first()
     }
@@ -32,7 +32,7 @@ struct DatabaseRefreshTokenRepository: RefreshTokenRepository, DatabaseRepositor
     }
     
     func count() -> EventLoopFuture<Int> {
-        return RefreshToken.query(on: database)
+        RefreshToken.query(on: database)
             .count()
     }
     

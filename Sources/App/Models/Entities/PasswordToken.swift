@@ -9,7 +9,7 @@ final class PasswordToken: Model {
     
     @Parent(key: "user_id")
     var user: User
-
+    
     @Field(key: "token")
     var token: String
     
@@ -18,7 +18,10 @@ final class PasswordToken: Model {
     
     init() {}
     
-    init(id: UUID? = nil, userID: UUID, token: String, expiresAt: Date = Date().addingTimeInterval(Constants.RESET_PASSWORD_TOKEN_LIFETIME)) {
+    init(id: UUID? = nil,
+         userID: UUID,
+         token: String,
+         expiresAt: Date = Date().addingTimeInterval(Constants.RESET_PASSWORD_TOKEN_LIFETIME)) {
         self.id = id
         self.$user.id = userID
         self.token = token

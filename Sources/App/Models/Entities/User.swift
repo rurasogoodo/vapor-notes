@@ -22,6 +22,9 @@ final class User: Model, Authenticatable {
     @Field(key: "is_email_verified")
     var isEmailVerified: Bool
     
+    @Children(for: \.$user)
+    var notes: [Note]
+    
     init() {}
     
     init(id: UUID? = nil,

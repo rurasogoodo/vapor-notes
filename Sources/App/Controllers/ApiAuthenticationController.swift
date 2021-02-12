@@ -1,7 +1,7 @@
 import Vapor
 import Fluent
 
-struct AuthenticationController: RouteCollection {
+struct ApiAuthenticationController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.group("auth") { auth in
             auth.post("register", use: register)
@@ -29,7 +29,7 @@ struct AuthenticationController: RouteCollection {
     }
     
     private func register(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        try RegisterRequest.validate(req)
+        try RegisterRequest.validate(content: req)
         let registerRequest = try req.content.decode(RegisterRequest.self)
         guard registerRequest.password == registerRequest.confirmPassword else {
             throw AuthenticationError.passwordsDontMatch
@@ -54,7 +54,7 @@ struct AuthenticationController: RouteCollection {
     }
     
     private func login(_ req: Request) throws -> EventLoopFuture<LoginResponse> {
-        try LoginRequest.validate(req)
+        try LoginRequest.validate(content: req)
         let loginRequest = try req.content.decode(LoginRequest.self)
         
         return req.users
@@ -199,7 +199,7 @@ struct AuthenticationController: RouteCollection {
     }
     
     private func recoverAccount(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        try RecoverAccountRequest.validate(req)
+        try RecoverAccountRequest.validate(content: req)
         let content = try req.content.decode(RecoverAccountRequest.self)
         
         guard content.password == content.confirmPassword else {
