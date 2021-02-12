@@ -23,6 +23,7 @@ struct AuthenticationController: RouteCollection {
             // Authentication required
             auth.group(UserAuthenticator()) { authenticated in
                 authenticated.get("me", use: getCurrentUser)
+                authenticated.delete("logout", use: logout)
             }
         }
     }
@@ -92,6 +93,17 @@ struct AuthenticationController: RouteCollection {
                 return req.eventLoop.makeFailedFuture(error)
             }
         }
+    }
+    
+    private func logout(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+        let payload = try req.auth.require(Payload.self)
+        req.auth.logout(Payload.self)
+        return RefreshToken.query(on: req.db)
+            .filter(\.$user.$id == payload.userID)
+            .first()
+            .unwrap(or: AuthenticationError.refreshTokenOrUserNotFound)
+            .flatMap { req.refreshTokens.delete($0) }
+            .transform(to: HTTPStatus.noContent)
     }
     
     private func refreshAccessToken(_ req: Request) throws -> EventLoopFuture<AccessTokenResponse> {
