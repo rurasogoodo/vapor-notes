@@ -16,6 +16,9 @@ final class Note: Model {
     @Field(key: "is_note_hidden")
     var isHidden: Bool
     
+    @Field(key: "createdAt")
+    var createdAt: Date
+    
     @Parent(key: "userID")
     var user: User
     
@@ -24,10 +27,14 @@ final class Note: Model {
     init(id: UUID? = nil,
          title: String,
          description: String,
-         isHidden: Bool = false) {
+         isHidden: Bool = false,
+         createdAt: Date,
+         userID: User.IDValue) {
         self.id = id
         self.title = title
         self.description = description
         self.isHidden = isHidden
+        self.createdAt = createdAt
+        self.$user.id = userID
     }
 }

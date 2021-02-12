@@ -7,6 +7,7 @@ struct CreateNote: Migration {
             .field("title", .string, .required)
             .field("description", .string, .required)
             .field("is_note_hidden", .bool, .required, .custom("DEFAULT FALSE"))
+            .field("createdAt", .datetime, .required)
             .field("userID", .uuid, .required, .references("users", "id"))
             .create()
     }

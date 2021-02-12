@@ -6,6 +6,6 @@ extension Request {
     var refreshTokens: RefreshTokenRepository { application.repositories.refreshTokens.for(self) }
     var emailTokens: EmailTokenRepository { application.repositories.emailTokens.for(self) }
     var passwordTokens: PasswordTokenRepository { application.repositories.passwordTokens.for(self) }
-    
+    var notes: NoteRepository { application.repositories.notes.for(self) }
 //    var email: EmailVerifier { application.emailVerifiers.verifier.for(self) }
 }
