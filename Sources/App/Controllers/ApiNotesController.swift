@@ -6,6 +6,7 @@ struct ApiNotesController: RouteCollection {
         routes.group("notes") { notes in
             notes.group(UserAuthenticator()) { authenticated in
                 authenticated.post("create", use: createNote)
+                authenticated.get("allNotes", use: fetchAllNotes)
             }
         }
     }
@@ -29,6 +30,16 @@ struct ApiNotesController: RouteCollection {
                 } catch {
                     return req.eventLoop.makeFailedFuture(error)
                 }
+            }
+    }
+    
+    private func fetchAllNotes(_ req: Request) throws -> EventLoopFuture<[NoteDTO]> {
+        let payload = try req.auth.require(Payload.self)
+        return req.users.find(id: payload.userID)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { user in
+                req.notes.fetchAll(for: user.id)
+                    .mapEach { NoteDTO(from: $0, user: user) }
             }
     }
 }

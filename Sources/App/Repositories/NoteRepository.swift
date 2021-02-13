@@ -8,6 +8,7 @@ protocol NoteRepository: Repository {
     func delete(_ note: Note) -> EventLoopFuture<Void>
     func count() -> EventLoopFuture<Int>
     func delete(for userID: UUID) -> EventLoopFuture<Void>
+    func fetchAll(for userId: UUID?) -> EventLoopFuture<[Note]>
 }
 
 struct DatabaseNoteRepository: NoteRepository, DatabaseRepository {
@@ -40,6 +41,12 @@ struct DatabaseNoteRepository: NoteRepository, DatabaseRepository {
         Note.query(on: database)
             .filter(\.$user.$id == userID)
             .delete()
+    }
+    
+    func fetchAll(for userId: UUID?) -> EventLoopFuture<[Note]> {
+        User.find(userId, on: database)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { $0.$notes.query(on: database).all() }
     }
 }
 
