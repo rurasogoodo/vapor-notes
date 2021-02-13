@@ -4,7 +4,7 @@ import JWT
 struct Payload: JWTPayload, Authenticatable {
     // User-releated stuff
     var userID: UUID
-    var fullName: String
+    var username: String
     var email: String
     var isAdmin: Bool
     
@@ -17,7 +17,7 @@ struct Payload: JWTPayload, Authenticatable {
     
     init(with user: User) throws {
         self.userID = try user.requireID()
-        self.fullName = user.fullName
+        self.username = user.username
         self.email = user.email
         self.isAdmin = user.isAdmin
         self.exp = ExpirationClaim(value: Date().addingTimeInterval(Constants.ACCESS_TOKEN_LIFETIME))
@@ -26,6 +26,6 @@ struct Payload: JWTPayload, Authenticatable {
 
 extension User {
     convenience init(from payload: Payload) {
-        self.init(id: payload.userID, fullName: payload.fullName, email: payload.email, passwordHash: "", isAdmin: payload.isAdmin)
+        self.init(id: payload.userID, fullName: payload.username, email: payload.email, passwordHash: "", isAdmin: payload.isAdmin)
     }
 }

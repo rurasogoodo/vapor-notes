@@ -1,7 +1,7 @@
 import Vapor
 
 struct RegisterRequest: Content {
-    let fullName: String
+    let username: String
     let email: String
     let password: String
     let confirmPassword: String
@@ -17,6 +17,6 @@ extension RegisterRequest: Validatable {
 
 extension User {
     convenience init(from register: RegisterRequest, hash: String) throws {
-        self.init(fullName: register.fullName, email: register.email, passwordHash: hash)
+        self.init(fullName: register.username, email: register.email, passwordHash: hash)
     }
 }

@@ -47,13 +47,13 @@ struct ApiAuthenticationController: RouteCollection {
                             throw AuthenticationError.emailAlreadyExists
                         }
                         throw $0
-                }
-//                .flatMap { req.emailVerifier.verify(for: user) }
-        }
-        .transform(to: .created)
+                    }
+                //                .flatMap { req.emailVerifier.verify(for: user) }
+            }
+            .transform(to: .created)
     }
     
-    private func login(_ req: Request) throws -> EventLoopFuture<LoginResponse> {
+    private func login(_ req: Request) throws -> EventLoopFuture<DataResponse<LoginResponse>> {
         try LoginRequest.validate(content: req)
         let loginRequest = try req.content.decode(LoginRequest.self)
         
@@ -67,32 +67,33 @@ struct ApiAuthenticationController: RouteCollection {
                     .verify(loginRequest.password, created: user.passwordHash)
                     .guard({ $0 == true }, else: AuthenticationError.invalidEmailOrPassword)
                     .transform(to: user)
-        }
-        .flatMap { user -> EventLoopFuture<User> in
-            do {
-                return try req.refreshTokens.delete(for: user.requireID()).transform(to: user)
-            } catch {
-                return req.eventLoop.makeFailedFuture(error)
             }
-        }
-        .flatMap { user in
-            do {
-                let token = req.random.generate(bits: 256)
-                let refreshToken = try RefreshToken(token: SHA256.hash(token), userID: user.requireID())
-                
-                return req.refreshTokens
-                    .create(refreshToken)
-                    .flatMapThrowing {
-                        try LoginResponse(
-                            user: UserDTO(from: user),
-                            accessToken: req.jwt.sign(Payload(with: user)),
-                            refreshToken: token
-                        )
+            .flatMap { user -> EventLoopFuture<User> in
+                do {
+                    return try req.refreshTokens.delete(for: user.requireID()).transform(to: user)
+                } catch {
+                    return req.eventLoop.makeFailedFuture(error)
                 }
-            } catch {
-                return req.eventLoop.makeFailedFuture(error)
             }
-        }
+            .flatMap { user in
+                do {
+                    let refreshTokenString = req.random.generate(bits: 256)
+                    let refreshToken = try RefreshToken(token: SHA256.hash(refreshTokenString), userID: user.requireID())
+                    
+                    return req.refreshTokens
+                        .create(refreshToken)
+                        .flatMapThrowing {
+                            let payload = try Payload(with: user)
+                            let accessTokenString = try req.jwt.sign(payload)
+                            let accessTokenResponse = AccessTokenResponse(refreshToken: refreshTokenString,
+                                                                          accessToken: accessTokenString,
+                                                                          expiresAt: payload.exp.value)
+                            return DataResponse<LoginResponse>(data: LoginResponse(user: UserDTO(from: user), accessToken: accessTokenResponse))
+                        }
+                } catch {
+                    return req.eventLoop.makeFailedFuture(error)
+                }
+            }
     }
     
     private func logout(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
@@ -127,12 +128,12 @@ struct ApiAuthenticationController: RouteCollection {
                     
                     return req.refreshTokens
                         .create(refreshToken)
-                        .transform(to: (token, accessToken))
+                        .transform(to: (token, accessToken, payload.exp.value))
                 } catch {
                     return req.eventLoop.makeFailedFuture(error)
                 }
-        }
-        .map { AccessTokenResponse(refreshToken: $0, accessToken: $1) }
+            }
+            .map { AccessTokenResponse(refreshToken: $0, accessToken: $1, expiresAt: $2) }
     }
     
     private func getCurrentUser(_ req: Request) throws -> EventLoopFuture<UserDTO> {
@@ -157,8 +158,8 @@ struct ApiAuthenticationController: RouteCollection {
                    else: AuthenticationError.emailTokenHasExpired)
             .flatMap {
                 req.users.set(\.$isEmailVerified, to: true, for: $0.$user.id)
-        }
-        .transform(to: .ok)
+            }
+            .transform(to: .ok)
     }
     
     private func resetPassword(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
@@ -174,7 +175,7 @@ struct ApiAuthenticationController: RouteCollection {
                 } else {
                     return req.eventLoop.makeSucceededFuture(.noContent)
                 }
-        }
+            }
     }
     
     private func verifyResetPasswordToken(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
@@ -190,12 +191,12 @@ struct ApiAuthenticationController: RouteCollection {
                     return req.passwordTokens
                         .delete(passwordToken)
                         .transform(to: req.eventLoop
-                            .makeFailedFuture(AuthenticationError.passwordTokenHasExpired)
-                    )
+                                    .makeFailedFuture(AuthenticationError.passwordTokenHasExpired)
+                        )
                 }
                 
                 return req.eventLoop.makeSucceededFuture(.noContent)
-        }
+            }
     }
     
     private func recoverAccount(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
@@ -216,8 +217,8 @@ struct ApiAuthenticationController: RouteCollection {
                     return req.passwordTokens
                         .delete(passwordToken)
                         .transform(to: req.eventLoop
-                            .makeFailedFuture(AuthenticationError.passwordTokenHasExpired)
-                    )
+                                    .makeFailedFuture(AuthenticationError.passwordTokenHasExpired)
+                        )
                 }
                 
                 return req.password
@@ -225,10 +226,10 @@ struct ApiAuthenticationController: RouteCollection {
                     .hash(content.password)
                     .flatMap { digest in
                         req.users.set(\.$passwordHash, to: digest, for: passwordToken.$user.id)
-                }
-                .flatMap { req.passwordTokens.delete(for: passwordToken.$user.id) }
-        }
-        .transform(to: .noContent)
+                    }
+                    .flatMap { req.passwordTokens.delete(for: passwordToken.$user.id) }
+            }
+            .transform(to: .noContent)
     }
     
     private func sendEmailVerification(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
@@ -244,6 +245,6 @@ struct ApiAuthenticationController: RouteCollection {
                 return req.emailVerifier
                     .verify(for: user)
                     .transform(to: .noContent)
-        }
+            }
     }
 }

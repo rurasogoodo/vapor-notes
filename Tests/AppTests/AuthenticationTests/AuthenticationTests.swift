@@ -25,8 +25,7 @@ final class AuthenticationTests: XCTestCase {
             XCTAssertEqual(res.status, .ok)
             XCTAssertContent(UserDTO.self, res) { userContent in
                 XCTAssertEqual(userContent.email, "test@test.com")
-                XCTAssertEqual(userContent.fullName, "Test User")
-                XCTAssertEqual(userContent.isAdmin, true)
+                XCTAssertEqual(userContent.username, "Test User")
                 XCTAssertEqual(userContent.id, user.id)
             }
         })

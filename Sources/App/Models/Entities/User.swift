@@ -8,7 +8,7 @@ final class User: Model, Authenticatable {
     var id: UUID?
     
     @Field(key: "full_name")
-    var fullName: String
+    var username: String
     
     @Field(key: "email")
     var email: String
@@ -34,7 +34,7 @@ final class User: Model, Authenticatable {
          isAdmin: Bool = false,
          isEmailVerified: Bool = true) {
         self.id = id
-        self.fullName = fullName
+        self.username = fullName
         self.email = email
         self.passwordHash = passwordHash
         self.isAdmin = isAdmin

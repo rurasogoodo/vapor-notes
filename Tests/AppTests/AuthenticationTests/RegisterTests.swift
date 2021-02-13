@@ -21,7 +21,7 @@ final class RegisterTests: XCTestCase {
     func testRegisterHappyPath() throws {
         app.randomGenerators.use(.rigged(value: "token"))
         
-        let data = RegisterRequest(fullName: "Test User", email: "test@test.com", password: "password123", confirmPassword: "password123")
+        let data = RegisterRequest(username: "Test User", email: "test@test.com", password: "password123", confirmPassword: "password123")
         
         try app.test(.POST, registerPath, beforeRequest: { req in
             try req.content.encode(data)
@@ -30,7 +30,7 @@ final class RegisterTests: XCTestCase {
             
             let user = try XCTUnwrap(app.repositories.users.find(email: "test@test.com").wait())
             XCTAssertEqual(user.isAdmin, false)
-            XCTAssertEqual(user.fullName, "Test User")
+            XCTAssertEqual(user.username, "Test User")
             XCTAssertEqual(user.email, "test@test.com")
             XCTAssertEqual(user.isEmailVerified, false)
             XCTAssertTrue(try BCryptDigest().verify("password123", created: user.passwordHash))
@@ -47,7 +47,7 @@ final class RegisterTests: XCTestCase {
     }
     
     func testRegisterFailsWithNonMatchingPasswords() throws {
-        let data = RegisterRequest(fullName: "Test User", email: "test@test.com", password: "12345678", confirmPassword: "124")
+        let data = RegisterRequest(username: "Test User", email: "test@test.com", password: "12345678", confirmPassword: "124")
         
         try app.test(.POST, registerPath, beforeRequest: { request in
             try request.content.encode(data)
@@ -66,7 +66,7 @@ final class RegisterTests: XCTestCase {
         let user = User(fullName: "Test user 1", email: "test@test.com", passwordHash: "123")
         try user.create(on: app.db).wait()
                 
-        let registerRequest = RegisterRequest(fullName: "Test user 2", email: "test@test.com", password: "password123", confirmPassword: "password123")
+        let registerRequest = RegisterRequest(username: "Test user 2", email: "test@test.com", password: "password123", confirmPassword: "password123")
         try app.test(.POST, registerPath, beforeRequest: { req in
             try req.content.encode(registerRequest)
         }, afterResponse: { res in
