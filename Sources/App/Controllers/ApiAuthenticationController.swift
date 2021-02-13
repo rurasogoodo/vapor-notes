@@ -28,7 +28,7 @@ struct ApiAuthenticationController: RouteCollection {
         }
     }
     
-    private func register(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+    private func register(_ req: Request) throws -> EventLoopFuture<DataResponse<LoginResponse>> {
         try RegisterRequest.validate(content: req)
         let registerRequest = try req.content.decode(RegisterRequest.self)
         guard registerRequest.password == registerRequest.confirmPassword else {
@@ -48,9 +48,10 @@ struct ApiAuthenticationController: RouteCollection {
                         }
                         throw $0
                     }
-                //                .flatMap { req.emailVerifier.verify(for: user) }
+                    .flatMapThrowing {
+                        try createLoginResponse(with: user, req: req).wait()
+                    }
             }
-            .transform(to: .created)
     }
     
     private func login(_ req: Request) throws -> EventLoopFuture<DataResponse<LoginResponse>> {
@@ -107,7 +108,7 @@ struct ApiAuthenticationController: RouteCollection {
             .transform(to: HTTPStatus.noContent)
     }
     
-    private func refreshAccessToken(_ req: Request) throws -> EventLoopFuture<AccessTokenResponse> {
+    private func refreshAccessToken(_ req: Request) throws -> EventLoopFuture<DataResponse<AccessTokenResponse>> {
         let accessTokenRequest = try req.content.decode(AccessTokenRequest.self)
         let hashedRefreshToken = SHA256.hash(accessTokenRequest.refreshToken)
         
@@ -133,16 +134,18 @@ struct ApiAuthenticationController: RouteCollection {
                     return req.eventLoop.makeFailedFuture(error)
                 }
             }
-            .map { AccessTokenResponse(refreshToken: $0, accessToken: $1, expiresAt: $2) }
+            .map { DataResponse<AccessTokenResponse>(data: AccessTokenResponse(refreshToken: $0,
+                                                                               accessToken: $1,
+                                                                               expiresAt: $2)) }
     }
     
-    private func getCurrentUser(_ req: Request) throws -> EventLoopFuture<UserDTO> {
+    private func getCurrentUser(_ req: Request) throws -> EventLoopFuture<DataResponse<UserDTO>> {
         let payload = try req.auth.require(Payload.self)
         
         return req.users
             .find(id: payload.userID)
             .unwrap(or: AuthenticationError.userNotFound)
-            .map { UserDTO(from: $0) }
+            .map { DataResponse<UserDTO>(data: UserDTO(from: $0)) }
     }
     
     private func verifyEmail(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
@@ -246,5 +249,27 @@ struct ApiAuthenticationController: RouteCollection {
                     .verify(for: user)
                     .transform(to: .noContent)
             }
+    }
+    
+    private func createLoginResponse(with user: User, req: Request) throws -> EventLoopFuture<DataResponse<LoginResponse>> {
+        do {
+            let refreshTokenString = req.random.generate(bits: 256)
+            let refreshToken = try RefreshToken(token: SHA256.hash(refreshTokenString), userID: user.requireID())
+            
+            return req.refreshTokens
+                .create(refreshToken)
+                .flatMapThrowing {
+                    let payload = try Payload(with: user)
+                    let accessTokenString = try req.jwt.sign(payload)
+                    let accessTokenResponse = AccessTokenResponse(refreshToken: refreshTokenString,
+                                                                  accessToken: accessTokenString,
+                                                                  expiresAt: payload.exp.value)
+                    let response = DataResponse<LoginResponse>(data: LoginResponse(user: UserDTO(from: user),
+                                                                                   accessToken: accessTokenResponse))
+                    return response
+                }
+        } catch {
+            return req.eventLoop.makeFailedFuture(error)
+        }
     }
 }
