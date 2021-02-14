@@ -3,7 +3,7 @@ import Fluent
 
 struct ApiAuthenticationController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        routes.group("sessions") { auth in
+        routes.group("v1", "sessions") { auth in
             auth.post("register", use: register)
             auth.post("login", use: login)
             

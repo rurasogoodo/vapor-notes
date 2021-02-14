@@ -3,7 +3,7 @@ import Fluent
 
 struct ApiNotesController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        routes.group("notes") { notes in
+        routes.group("v1", "notes") { notes in
             notes.group(UserAuthenticator()) { authenticated in
                 authenticated.post("create", use: createNote)
                 authenticated.get("allNotes", use: fetchAllNotes)
