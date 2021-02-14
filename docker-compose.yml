@@ -17,8 +17,11 @@ services:
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
     ports:
       - '6379:6379'
-   server:
-     build: .
-     depends_on:
+  server:
+    build:
+      context: .
+    depends_on:
       - db
       - redis
+    ports:
+      - '8000:8000'

@@ -7,7 +7,7 @@ final class User: Model, Authenticatable {
     @ID(key: .id)
     var id: UUID?
     
-    @Field(key: "full_name")
+    @Field(key: "username")
     var username: String
     
     @Field(key: "email")

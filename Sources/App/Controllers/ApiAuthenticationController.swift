@@ -48,8 +48,26 @@ struct ApiAuthenticationController: RouteCollection {
                         }
                         throw $0
                     }
-                    .flatMapThrowing {
-                        try self.createLoginResponse(with: user, req: req).wait()
+                    .flatMap {
+                        do {
+                            let refreshTokenString = req.random.generate(bits: 256)
+                            let refreshToken = try RefreshToken(token: SHA256.hash(refreshTokenString), userID: user.requireID())
+                            
+                            return req.refreshTokens
+                                .create(refreshToken)
+                                .flatMapThrowing {
+                                    let payload = try Payload(with: user)
+                                    let accessTokenString = try req.jwt.sign(payload)
+                                    let accessTokenResponse = AccessTokenResponse(refreshToken: refreshTokenString,
+                                                                                  accessToken: accessTokenString,
+                                                                                  expiresAt: payload.exp.value)
+                                    let response = DataResponse<LoginResponse>(data: LoginResponse(user: UserDTO(from: user),
+                                                                                                   accessToken: accessTokenResponse))
+                                    return response
+                                }
+                        } catch {
+                            return req.eventLoop.makeFailedFuture(error)
+                        }
                     }
             }
     }

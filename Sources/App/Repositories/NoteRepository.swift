@@ -46,7 +46,7 @@ struct DatabaseNoteRepository: NoteRepository, DatabaseRepository {
     func fetchAll(for userId: UUID?) -> EventLoopFuture<[Note]> {
         User.find(userId, on: database)
             .unwrap(or: Abort(.notFound))
-            .flatMap { $0.$notes.query(on: database).all() }
+            .flatMap { $0.$notes.query(on: self.database).all() }
     }
 }
 
