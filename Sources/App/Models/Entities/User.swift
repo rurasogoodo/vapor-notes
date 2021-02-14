@@ -28,13 +28,13 @@ final class User: Model, Authenticatable {
     init() {}
     
     init(id: UUID? = nil,
-         fullName: String,
+         username: String,
          email: String,
          passwordHash: String,
          isAdmin: Bool = false,
          isEmailVerified: Bool = true) {
         self.id = id
-        self.username = fullName
+        self.username = username
         self.email = email
         self.passwordHash = passwordHash
         self.isAdmin = isAdmin

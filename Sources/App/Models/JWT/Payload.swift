@@ -26,6 +26,6 @@ struct Payload: JWTPayload, Authenticatable {
 
 extension User {
     convenience init(from payload: Payload) {
-        self.init(id: payload.userID, fullName: payload.username, email: payload.email, passwordHash: "", isAdmin: payload.isAdmin)
+        self.init(id: payload.userID, username: payload.username, email: payload.email, passwordHash: "", isAdmin: payload.isAdmin)
     }
 }

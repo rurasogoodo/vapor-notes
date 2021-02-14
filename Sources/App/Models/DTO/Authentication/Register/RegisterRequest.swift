@@ -17,6 +17,6 @@ extension RegisterRequest: Validatable {
 
 extension User {
     convenience init(from register: RegisterRequest, hash: String) throws {
-        self.init(fullName: register.username, email: register.email, passwordHash: hash)
+        self.init(username: register.username, email: register.email, passwordHash: hash)
     }
 }

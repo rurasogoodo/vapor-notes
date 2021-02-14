@@ -5,14 +5,14 @@ struct UserDTO: Content {
     let username: String
     let email: String
     
-    init(id: UUID? = nil, fullName: String, email: String, isAdmin: Bool) {
+    init(id: UUID? = nil, username: String, email: String, isAdmin: Bool) {
         self.id = id
-        self.username = fullName
+        self.username = username
         self.email = email
     }
     
     init(from user: User) {
-        self.init(id: user.id, fullName: user.username, email: user.email, isAdmin: user.isAdmin)
+        self.init(id: user.id, username: user.username, email: user.email, isAdmin: user.isAdmin)
     }
 }
 
