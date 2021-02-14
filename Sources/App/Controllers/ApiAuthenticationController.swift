@@ -49,7 +49,7 @@ struct ApiAuthenticationController: RouteCollection {
                         throw $0
                     }
                     .flatMapThrowing {
-                        try createLoginResponse(with: user, req: req).wait()
+                        try self.createLoginResponse(with: user, req: req).wait()
                     }
             }
     }
