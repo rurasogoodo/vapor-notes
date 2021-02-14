@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "vapor-auth-template",
+    name: "vapor-api-notes",
     platforms: [
        .macOS(.v10_15),
     ],
