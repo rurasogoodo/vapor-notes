@@ -23,10 +23,11 @@ public func configure(_ app: Application) throws {
     // Configure PostgreSQL database
     app.databases.use(
         .postgres(
-            hostname: Environment.get("POSTGRES_HOSTNAME") ?? "localhost",
-            username: Environment.get("POSTGRES_USERNAME") ?? "vapor",
-            password: Environment.get("POSTGRES_PASSWORD") ?? "password",
-            database: Environment.get("POSTGRES_DATABASE") ?? "vapor"
+            hostname: Environment.get("DB_HOST") ?? "localhost",
+            port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
+            username: Environment.get("DB_USER") ?? "vapor",
+            password: Environment.get("DB_PASS") ?? "password",
+            database: Environment.get("DB_NAME") ?? "vapor"
         ), as: .psql)
         
     // MARK: Middleware
@@ -49,6 +50,7 @@ public func configure(_ app: Application) throws {
     try services(app)
     
     
+    try app.autoMigrate().wait()
     if app.environment == .development {
         try app.autoMigrate().wait()
         try app.queues.startInProcessJobs()
