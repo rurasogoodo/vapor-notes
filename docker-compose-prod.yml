@@ -40,4 +40,4 @@ services:
     environment:
       <<: *shared_environment
     ports:
-      - 80:8080
+      - 8080:8080
