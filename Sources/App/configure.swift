@@ -23,7 +23,7 @@ public func configure(_ app: Application) throws {
     // Configure PostgreSQL database
     app.databases.use(
         .postgres(
-            hostname: Environment.get("DB_HOST") ?? "localhost",
+            hostname: Environment.get("DB_HOST") ?? "db",
             port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
             username: Environment.get("DB_USER") ?? "vapor",
             password: Environment.get("DB_PASS") ?? "password",
