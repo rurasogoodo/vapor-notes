@@ -14,7 +14,7 @@ struct AppConfig {
 //                fatalError("Please add app configuration to environment variables")
 //        }
         
-        return .init(frontendURL: "frontendURL", apiURL: "http://64.227.120.173:8080", noReplyEmail: "noReplyEmail")
+        return .init(frontendURL: "frontendURL", apiURL: "http://64.227.120.173", noReplyEmail: "noReplyEmail")
     }
 }
 

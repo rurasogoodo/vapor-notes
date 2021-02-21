@@ -34,6 +34,7 @@ services:
   server:
     build:
       context: .
+     dockerfile: Dockerfile
     depends_on:
       - db
       - redis
